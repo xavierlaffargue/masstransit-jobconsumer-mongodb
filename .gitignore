@@ -348,3 +348,6 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+src/MasstransitJobConsumerMongoDb/Application.Worker/appsettings.json
+src/MasstransitJobConsumerMongoDb/Orchestrator-JobConsumer/appsettings.json
+src/MasstransitJobConsumerMongoDb/CreateMessageApp/Program.cs
