@@ -1,0 +1,17 @@
+{
+  "profiles": {
+    "Worker Developement": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Local",
+        "ASPNETCORE_ENVIRONMENT": "Local"
+      }
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Local"
+      }
+    }
+  }
+}
