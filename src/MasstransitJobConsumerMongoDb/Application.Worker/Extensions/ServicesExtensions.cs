@@ -1,8 +1,9 @@
 ﻿using Application.Worker.Consumers;
+using MassTransit.JobService.Components.StateMachines;
+using Orchestrator.JobConsumer.Options;
 
 namespace Application.Worker.Extensions
 {
-    using Application.Worker.Options;
     using MassTransit;
     using MassTransit.JobService.Configuration;
     using Microsoft.Extensions.Configuration;
@@ -19,11 +20,33 @@ namespace Application.Worker.Extensions
 
         public static void AddMessaging(this IServiceCollection services, IConfiguration configuration)
         {
+            var mongodb = configuration.GetSection(MongoDbSection.Name).Get<MongoDbSection>();
             var serviceBus = configuration.GetSection(AzureServiceBusSection.Name).Get<AzureServiceBusSection>();
 
             services.AddMassTransit(x =>
             {
                 x.AddServiceBusMessageScheduler();
+
+                x.AddSagaRepository<JobSaga>()
+                    .MongoDbRepository(r =>
+                    {
+                        r.Connection = mongodb.ConnectionString;
+                        r.DatabaseName = mongodb.Database;
+                    });
+
+                x.AddSagaRepository<JobTypeSaga>()
+                    .MongoDbRepository(r =>
+                    {
+                        r.Connection = mongodb.ConnectionString;
+                        r.DatabaseName = mongodb.Database;
+                    });
+
+                x.AddSagaRepository<JobAttemptSaga>()
+                    .MongoDbRepository(r =>
+                    {
+                        r.Connection = mongodb.ConnectionString;
+                        r.DatabaseName = mongodb.Database;
+                    });
 
                 x.AddConsumer<SampleJobConsumer, SampleJobConsumerConfiguration>();
 
@@ -37,7 +60,12 @@ namespace Application.Worker.Extensions
 
                     cfg.ServiceInstance(options, instance =>
                     {
-                        instance.ConfigureJobService();
+                        instance.ConfigureJobServiceEndpoints(js =>
+                        {
+                            js.FinalizeCompleted = serviceBus.FinalizeCompleted;
+                            js.SagaPartitionCount = serviceBus.SagaPartitionCount;
+                            js.ConfigureSagaRepositories(context);
+                        });
                         instance.ConfigureEndpoints(context);
                     });
                 });
